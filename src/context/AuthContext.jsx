@@ -7,8 +7,8 @@ export const useAuth = () => useContext(AuthContext);
 const LS_KEY = "bb_auth_user";
 
 const API = import.meta.env.PROD 
-  ? (import.meta.env.VITE_API_URL_PROD || 'https://your-backend-url.herokuapp.com')
-  : (import.meta.env.VITE_API_URL || 'http://localhost:5000');
+  ? 'https://bookmyseat-server-1.onrender.com'
+  : 'http://localhost:5000';
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(() => {
