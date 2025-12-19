@@ -13,6 +13,11 @@ export function BusProvider({ children }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { user, token } = useAuth();
 
+  // Initial data load on component mount
+  useEffect(() => {
+    setRefreshTrigger(1);
+  }, []);
+
   useEffect(() => {
     async function load() {
       if (loading) return;
@@ -21,6 +26,7 @@ export function BusProvider({ children }) {
         const res = await axios.get(`${API}/api/buses`);
         setBuses(res.data || []);
       } catch (err) { 
+        console.error('Failed to load buses:', err);
         setBuses([]);
       }
       finally { setLoading(false); }
@@ -28,11 +34,9 @@ export function BusProvider({ children }) {
     load();
   }, [refreshTrigger]);
 
-  // Load data immediately when user changes (new login/signup)
+  // Load data on component mount and when user changes
   useEffect(() => {
-    if (user) {
-      setRefreshTrigger(prev => prev + 1);
-    }
+    setRefreshTrigger(prev => prev + 1);
   }, [user]);
 
   useEffect(() => {
@@ -41,15 +45,16 @@ export function BusProvider({ children }) {
         if (user && token) {
           if (user.role === 'admin') {
             const res = await axios.get(`${API}/api/buses/admin/bookings`, { headers: { Authorization: `Bearer ${token}` } });
-            setBookings(res.data);
+            setBookings(res.data || []);
           } else {
             const res = await axios.get(`${API}/api/buses/me/bookings`, { headers: { Authorization: `Bearer ${token}` } });
-            setBookings(res.data);
+            setBookings(res.data || []);
           }
         } else {
           setBookings([]);
         }
       } catch (err) { 
+        console.error('Failed to load bookings:', err);
         setBookings([]);
       }
     }
@@ -254,10 +259,9 @@ export function BusProvider({ children }) {
     }
   }
 
-  // Get available buses (future departures only) for display
+  // Get available buses (show all buses for display)
   const getAvailableBuses = useMemo(() => {
-    const now = new Date();
-    return buses.filter(b => new Date(b.departure) > now);
+    return buses; // Show all buses regardless of departure time
   }, [buses]);
 
   // Auto-refresh for admins every 30 seconds to sync data

@@ -11,7 +11,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getActiveCoupons } = useCoupon();
-  const { buses, fetchBuses } = useBus();
+  const { buses, allBuses, fetchBuses } = useBus();
   const activeCoupons = getActiveCoupons();
   const [featuredBuses, setFeaturedBuses] = useState([]);
 
@@ -24,9 +24,9 @@ export default function Home() {
   useEffect(() => {
     const loadFeaturedBuses = async () => {
       try {
-        await fetchBuses({});
-        // Get first 6 buses as featured
-        setFeaturedBuses(buses.slice(0, 6));
+        const allBuses = await fetchBuses({});
+        // Get first 6 buses as featured from all buses (not filtered)
+        setFeaturedBuses(allBuses.slice(0, 6));
       } catch (err) {
         console.error('Error loading featured buses:', err);
       }
@@ -35,8 +35,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setFeaturedBuses(buses.slice(0, 6));
-  }, [buses]);
+    // Use allBuses instead of filtered buses for home page display
+    setFeaturedBuses(allBuses.slice(0, 6));
+  }, [allBuses]);
 
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState("");
@@ -127,7 +128,7 @@ export default function Home() {
               <div className="bus-info">
                 <span className="fare">₹{bus.fare}</span>
                 <span className="seats">{bus.availableSeats} seats left</span>
-                <span className="rating">★ {bus.rating}</span>
+                <span className="rating">★ {bus.rating.toFixed(1)}</span>
               </div>
             </div>
             <button 
@@ -149,7 +150,7 @@ export default function Home() {
       <h2 className="section-title">Special Offers ({activeCoupons.length} Active)</h2>
       <div className="offers-grid">
         {activeCoupons.map(coupon => (
-          <div key={coupon.id} className="offer-card">
+          <div key={coupon._id || coupon.id} className="offer-card">
             <span className="offer-badge">
               {coupon.type === 'percentage' ? `${coupon.discount}%` : `₹${coupon.discount}`}
             </span>

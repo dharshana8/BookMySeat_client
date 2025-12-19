@@ -39,10 +39,7 @@ export default function Footer() {
         <div className="footer-section">
           <h3>BookMySeat</h3>
           <p>Your trusted travel partner for comfortable and safe bus journeys across India.</p>
-          <div className="contact-info">
-            <p>Email: support@bookmyseat.com</p>
-            <p>Phone: +91 98765 43210</p>
-          </div>
+
         </div>
 
         <div className="footer-section">
@@ -67,12 +64,9 @@ export default function Footer() {
 
         <div className="footer-section">
           <h4>Need Help?</h4>
-          <button 
-            className="help-btn"
-            onClick={() => setShowHelpForm(true)}
-          >
+          <a href="/contact" className="help-btn">
             Contact Support
-          </button>
+          </a>
           <p>We're here to help with any questions or issues.</p>
         </div>
       </div>

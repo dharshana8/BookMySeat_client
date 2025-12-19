@@ -226,7 +226,7 @@ export default function SearchResults() {
                         </div>
                         <div className="bus-details-mini">
                           <span className="detail-item">🚌 {bus.operator}</span>
-                          <span className="detail-item">⭐ {bus.rating}</span>
+                          <span className="detail-item">⭐ {bus.rating.toFixed(1)}</span>
                           <span className="detail-item">🪑 {bus.availableSeats}/{bus.totalSeats} seats</span>
                         </div>
                         <div className="amenities-mini">

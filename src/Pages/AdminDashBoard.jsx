@@ -23,10 +23,69 @@ export default function AdminDashBoard() {
   const [couponForm, setCouponForm] = useState({ code: "", discount: "", type: "percentage", minAmount: "", maxDiscount: "", expiryDate: "", isActive: true });
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [showAllBuses, setShowAllBuses] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
 
   const showNotification = (message, type = "info") => {
     setNotification({ show: true, message, type });
     setTimeout(() => setNotification({ show: false, message: "", type: "info" }), 4000);
+  };
+
+  const fetchContacts = async () => {
+    setLoadingContacts(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/contact/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setContacts(data);
+      }
+    } catch (err) {
+      showNotification('Failed to load support tickets', 'error');
+    } finally {
+      setLoadingContacts(false);
+    }
+  };
+
+  const updateContactStatus = async (contactId, status, adminResponse = '') => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/contact/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status, adminResponse })
+      });
+      
+      if (response.ok) {
+        await fetchContacts();
+        if (adminResponse) {
+          showNotification('Response sent successfully to customer!', 'success');
+        } else {
+          showNotification('Support ticket status updated', 'success');
+        }
+      }
+    } catch (err) {
+      showNotification('Failed to update support ticket', 'error');
+    }
+  };
+
+  const deleteContact = async (contactId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/contact/${contactId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        await fetchContacts();
+        showNotification('Ticket deleted successfully', 'success');
+      }
+    } catch (err) {
+      showNotification('Failed to delete support ticket', 'error');
+    }
   };
 
   const addCoupon = async () => {
@@ -99,6 +158,12 @@ export default function AdminDashBoard() {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (activeTab === 'support' && user?.role === 'admin') {
+      fetchContacts();
+    }
+  }, [activeTab, user]);
+
   const filteredBuses = useMemo(() => {
     if (loading) return [];
     let filtered = buses.filter(bus => {
@@ -152,6 +217,12 @@ export default function AdminDashBoard() {
           className={`tab-btn ${activeTab === "coupons" ? "active" : ""}`}
         >
           🎫 Coupons
+        </button>
+        <button 
+          onClick={() => setActiveTab("support")}
+          className={`tab-btn ${activeTab === "support" ? "active" : ""}`}
+        >
+          📞 Support Tickets
         </button>
       </div>
 
@@ -262,7 +333,7 @@ export default function AdminDashBoard() {
                       </div>
                       <div className="stat-item">
                         <span className="stat-label">Rating</span>
-                        <span className="stat-value">⭐ {bus.rating}</span>
+                        <span className="stat-value">⭐ {bus.rating.toFixed(1)}</span>
                       </div>
                       <div className="stat-item">
                         <span className="stat-label">Operator</span>
@@ -580,19 +651,39 @@ export default function AdminDashBoard() {
           {bookings.length > 0 ? (
             <div className="bookings-grid">
               {bookings.map(booking => (
-                <div key={booking.id} className={`booking-card ${booking.status?.toLowerCase() === 'cancelled' ? 'cancelled' : ''}`}>
+                <div key={booking.id} className={`booking-card ${booking.status?.toLowerCase() === 'cancelled' ? 'cancelled' : ''} ${(() => {
+                  const departureTime = new Date(booking.busDetails?.departure || booking.bus?.departure);
+                  const bookingTime = new Date(booking.createdAt);
+                  return bookingTime >= departureTime ? 'invalid-booking' : '';
+                })()}`}>
                   <div className="booking-header">
                     <h4>#{booking.id?.slice(-8)}</h4>
                     <span className={`status ${(() => {
                       if (booking.status?.toLowerCase() === 'cancelled') return 'cancelled';
-                      const travelDate = booking.busDetails?.arrival || booking.bus?.arrival;
-                      if (travelDate && new Date(travelDate) < new Date()) return 'completed';
+                      const departureTime = new Date(booking.busDetails?.departure || booking.bus?.departure);
+                      const bookingTime = new Date(booking.createdAt);
+                      const arrivalTime = new Date(booking.busDetails?.arrival || booking.bus?.arrival);
+                      const now = new Date();
+                      
+                      // Invalid booking: booked after departure
+                      if (bookingTime >= departureTime) return 'invalid';
+                      
+                      // Valid completed travel
+                      if (arrivalTime < now) return 'completed';
                       return 'confirmed';
                     })()}`}>
                       {(() => {
                         if (booking.status?.toLowerCase() === 'cancelled') return 'Cancelled';
-                        const travelDate = booking.busDetails?.arrival || booking.bus?.arrival;
-                        if (travelDate && new Date(travelDate) < new Date()) return 'Travel Done';
+                        const departureTime = new Date(booking.busDetails?.departure || booking.bus?.departure);
+                        const bookingTime = new Date(booking.createdAt);
+                        const arrivalTime = new Date(booking.busDetails?.arrival || booking.bus?.arrival);
+                        const now = new Date();
+                        
+                        // Invalid booking: booked after departure
+                        if (bookingTime >= departureTime) return '❌ Invalid Booking';
+                        
+                        // Valid completed travel
+                        if (arrivalTime < now) return 'Travel Successful';
                         return 'Confirmed';
                       })()}
                     </span>
@@ -620,6 +711,83 @@ export default function AdminDashBoard() {
           )}
         </div>
       )}
+
+      {activeTab === "support" && (
+        <div className="admin-content">
+          <div className="section-header">
+            <h2>Support Tickets</h2>
+            <span className="ticket-count">{contacts.length} total tickets</span>
+          </div>
+          
+          {loadingContacts ? (
+            <LoadingSpinner />
+          ) : contacts.length > 0 ? (
+            <div className="tickets-grid">
+              {contacts.map(contact => (
+                <div key={contact._id} className={`ticket-card ${contact.status.toLowerCase()}`}>
+                  <div className="ticket-header">
+                    <h4>#{contact._id.slice(-8)}</h4>
+                    <span className={`status ${contact.status.toLowerCase()}`}>
+                      {contact.status}
+                    </span>
+                  </div>
+                  <div className="ticket-info">
+                    <p><strong>Subject:</strong> {contact.subject}</p>
+                    <p><strong>From:</strong> {contact.name} ({contact.email})</p>
+                    <p><strong>User:</strong> {contact.userId?.name || 'Guest'}</p>
+                    <p><strong>Message:</strong> {contact.message}</p>
+                    <p><strong>Submitted:</strong> {new Date(contact.createdAt).toLocaleString()}</p>
+                    {contact.adminResponse && (
+                      <div className="admin-response">
+                        <strong>Admin Response:</strong>
+                        <p>{contact.adminResponse}</p>
+                        <small>Responded by {contact.respondedBy?.name} on {new Date(contact.respondedAt).toLocaleString()}</small>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ticket-actions">
+                    <select
+                      value={contact.status}
+                      onChange={(e) => updateContactStatus(contact._id, e.target.value)}
+                      className="status-select"
+                    >
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Resolved">Resolved</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        const response = prompt('Enter your response to the customer:');
+                        if (response && response.trim()) {
+                          updateContactStatus(contact._id, 'Resolved', response.trim());
+                        }
+                      }}
+                      className="respond-btn"
+                    >
+                      💬 Respond
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this support ticket?')) {
+                          deleteContact(contact._id);
+                        }
+                      }}
+                      className="delete-btn"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <h3>No support tickets</h3>
+              <p>Support tickets will appear here when users submit requests</p>
+            </div>
+          )}
+        </div>
+      )}
       
       {popup.show && (
         <MessagePopup
@@ -630,7 +798,21 @@ export default function AdminDashBoard() {
       )}
       
       {notification.show && (
-        <div className={`notification ${notification.type}`}>
+        <div className={`notification ${notification.type}`} style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '15px 20px',
+          borderRadius: '8px',
+          color: 'white',
+          fontWeight: '500',
+          zIndex: '1000',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}>
           <span>{notification.message}</span>
           <button onClick={() => setNotification({ show: false, message: "", type: "info" })} className="close-btn">×</button>
         </div>

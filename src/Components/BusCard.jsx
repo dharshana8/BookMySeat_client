@@ -64,7 +64,7 @@ export default function BusCard({ bus }) {
             </div>
           </div>
           <div className="bus-rating">
-            <span className="rating">⭐ {bus.rating}</span>
+            <span className="rating">⭐ {bus.rating.toFixed(1)}</span>
           </div>
         </div>
 
