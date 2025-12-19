@@ -13,6 +13,7 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
@@ -76,13 +77,22 @@ export default function Signup() {
             />
 
             <label>Password</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              placeholder="••••••••"
-              onChange={handleChange}
-            />
+            <div className="password-input-container">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                placeholder="••••••••"
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "👁️" : "👁️🗨️"}
+              </button>
+            </div>
 
             {error && <div className="signup-error">{error}</div>}
             {success && <div className="signup-success">{success}</div>}

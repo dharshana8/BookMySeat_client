@@ -289,7 +289,7 @@ ${isDelayed ? `<div class="delay-alert">⚠️ <strong>DELAY NOTICE:</strong> Yo
     }
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/buses/bookings/${bookingToCancel._id || bookingToCancel.id}/cancel`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://bookmyseat-server-1.onrender.com'}/api/buses/bookings/${bookingToCancel._id || bookingToCancel.id}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
