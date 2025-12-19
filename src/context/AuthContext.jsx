@@ -33,8 +33,15 @@ export function AuthProvider({ children }) {
   async function signup({ name, email, password }) {
     try {
       const res = await axios.post(`${API}/api/auth/signup`, { name, email, password });
-      localStorage.setItem(LS_KEY, JSON.stringify({ user: res.data.user, token: res.data.token }));
-      setAuth({ user: res.data.user, token: res.data.token });
+      const authData = { user: res.data.user, token: res.data.token };
+      localStorage.setItem(LS_KEY, JSON.stringify(authData));
+      setAuth(authData);
+      
+      // Force immediate data refresh for new users
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
       return res.data.user;
     } catch (err) {
       if (err.code === 'NETWORK_ERROR' || !err.response) {
@@ -50,6 +57,12 @@ export function AuthProvider({ children }) {
       const authData = { user: res.data.user, token: res.data.token };
       localStorage.setItem(LS_KEY, JSON.stringify(authData));
       setAuth(authData);
+      
+      // Force immediate data refresh for returning users
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
       return res.data.user;
     } catch (err) {
       if (!err.response) {

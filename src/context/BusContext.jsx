@@ -28,6 +28,13 @@ export function BusProvider({ children }) {
     load();
   }, [refreshTrigger]);
 
+  // Load data immediately when user changes (new login/signup)
+  useEffect(() => {
+    if (user) {
+      setRefreshTrigger(prev => prev + 1);
+    }
+  }, [user]);
+
   useEffect(() => {
     async function loadBookings() {
       try {
@@ -186,11 +193,83 @@ export function BusProvider({ children }) {
     setRefreshTrigger(prev => prev + 1);
   }
 
+  async function fetchBuses(params = {}) {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/api/buses`, { params });
+      setBuses(res.data || []);
+      return res.data || [];
+    } catch (err) {
+      setBuses([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateBusDelay(busId, delayMinutes, reason) {
+    try {
+      if (!token) throw new Error('Not authenticated');
+      const res = await axios.put(`${API}/api/buses/${busId}/delay`, 
+        { delayMinutes, reason }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update local bus data immediately
+      setBuses(prev => prev.map(b => b.id === busId ? res.data.bus : b));
+      setRefreshTrigger(prev => prev + 1);
+      
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function clearBusDelay(busId) {
+    try {
+      if (!token) throw new Error('Not authenticated');
+      const res = await axios.delete(`${API}/api/buses/${busId}/delay`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update local bus data immediately
+      setBuses(prev => prev.map(b => b.id === busId ? res.data.bus : b));
+      setRefreshTrigger(prev => prev + 1);
+      
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function getDelayHistory() {
+    try {
+      if (!token) throw new Error('Not authenticated');
+      const res = await axios.get(`${API}/api/buses/admin/delays`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   // Get available buses (future departures only) for display
   const getAvailableBuses = useMemo(() => {
     const now = new Date();
     return buses.filter(b => new Date(b.departure) > now);
   }, [buses]);
+
+  // Auto-refresh for admins every 30 seconds to sync data
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      const interval = setInterval(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 30000); // 30 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const contextValue = useMemo(() => ({
     buses: getAvailableBuses,
@@ -209,7 +288,11 @@ export function BusProvider({ children }) {
     clearBookingHistory,
     clearAllBookings,
     refreshBusData,
-    forceRefresh
+    forceRefresh,
+    fetchBuses,
+    updateBusDelay,
+    clearBusDelay,
+    getDelayHistory
   }), [getAvailableBuses, buses, bookings, loading, searchBuses]);
 
   return <BusContext.Provider value={contextValue}>{children}</BusContext.Provider>;

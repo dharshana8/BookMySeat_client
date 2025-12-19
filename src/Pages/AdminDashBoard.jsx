@@ -9,7 +9,7 @@ import ScrollToTop from "../Components/ScrollToTop";
 import "./css/AdminDashBoard.css";
 
 export default function AdminDashBoard() {
-  const { buses, deleteBus, bookings, loading, clearAllBookings } = useBus();
+  const { buses, deleteBus, bookings, loading, clearAllBookings, updateBusDelay, clearBusDelay, getDelayHistory } = useBus();
   const { user, token } = useAuth();
   const { coupons, addCoupon: addCouponToContext, updateCoupon, deleteCoupon: deleteCouponFromContext, toggleCouponStatus } = useCoupon();
   const navigate = useNavigate();
@@ -500,29 +500,13 @@ export default function AdminDashBoard() {
                       const reason = document.getElementById(`reason-${bus.id}`).value;
                       if (delayMinutes && reason && delayMinutes > 0 && delayMinutes <= 480 && reason.trim().length >= 3) {
                         try {
-                          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/buses/${bus.id}/delay`, {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ delayMinutes, reason })
-                          });
-                          
-                          const result = await response.json();
-                          
-                          if (response.ok) {
-                            showNotification(`Updated ${bus.name}: Delayed by ${delayMinutes} min - ${reason}`, "success");
-                            // Clear inputs
-                            document.getElementById(`delay-${bus.id}`).value = '';
-                            document.getElementById(`reason-${bus.id}`).value = '';
-                            // Refresh buses data
-                            window.location.reload();
-                          } else {
-                            showNotification(result.message || 'Failed to update delay', 'error');
-                          }
+                          await updateBusDelay(bus.id, delayMinutes, reason);
+                          showNotification(`Updated ${bus.name}: Delayed by ${delayMinutes} min - ${reason}`, "success");
+                          // Clear inputs
+                          document.getElementById(`delay-${bus.id}`).value = '';
+                          document.getElementById(`reason-${bus.id}`).value = '';
                         } catch (err) {
-                          showNotification('Failed to update delay', 'error');
+                          showNotification(err.response?.data?.message || 'Failed to update delay', 'error');
                         }
                       } else {
                         if (!delayMinutes || delayMinutes <= 0 || delayMinutes > 480) {
@@ -540,19 +524,13 @@ export default function AdminDashBoard() {
                   </button>
                   {bus.delayInfo?.isDelayed && (
                     <button
-                      onClick={() => {
-                        // Reset to original times (would need to store original times)
-                        const originalDeparture = new Date(bus.departure);
-                        const originalArrival = new Date(bus.arrival);
-                        
-                        // Remove delay minutes to get back original time
-                        const resetDeparture = new Date(originalDeparture.getTime() - (bus.delayInfo.delayMinutes * 60000));
-                        const resetArrival = new Date(originalArrival.getTime() - (bus.delayInfo.delayMinutes * 60000));
-                        
-                        showNotification(`Cleared delay for ${bus.name}. Restored times: ${resetDeparture.toLocaleTimeString()} - ${resetArrival.toLocaleTimeString()}`, "success");
-                        
-                        // In real app, update bus with cleared delay
-                        // await clearBusDelay(bus.id);
+                      onClick={async () => {
+                        try {
+                          await clearBusDelay(bus.id);
+                          showNotification(`Cleared delay for ${bus.name}. Bus is now on time.`, "success");
+                        } catch (err) {
+                          showNotification(err.response?.data?.message || 'Failed to clear delay', 'error');
+                        }
                       }}
                       className="clear-delay-btn"
                     >
