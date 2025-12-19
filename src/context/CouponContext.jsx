@@ -5,7 +5,9 @@ import { useAuth } from './AuthContext';
 const CouponContext = createContext();
 export const useCoupon = () => useContext(CouponContext);
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.PROD 
+  ? 'https://bookmyseat-server-1.onrender.com'
+  : 'http://localhost:5000';
 
 export function CouponProvider({ children }) {
   const [coupons, setCoupons] = useState([]);

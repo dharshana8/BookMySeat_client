@@ -4,7 +4,9 @@ import { useAuth } from './AuthContext';
 const BusContext = createContext();
 export const useBus = () => useContext(BusContext);
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.PROD 
+  ? 'https://bookmyseat-server-1.onrender.com'
+  : 'http://localhost:5000';
 
 export function BusProvider({ children }) {
   const [buses, setBuses] = useState([]);
