@@ -1,0 +1,57 @@
+:root {
+  --red: #d32f2f;
+  --text: #232323;
+  --muted-text: #6b6b6b;
+  --muted-bg: #fafafb;
+}
+
+.userdash-page {
+  padding: 40px 60px;
+}
+
+.dash-header h1 {
+  font-size: 32px;
+  color: var(--text);
+}
+
+.dash-header p {
+  color: var(--muted-text);
+  margin-top: 5px;
+}
+
+/* Quick search */
+.dash-search-card {
+  background: white;
+  padding: 20px;
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.dash-search-card input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+}
+
+.dash-search-btn {
+  background: var(--red);
+  color: white;
+  border-radius: 8px;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.section-title {
+  margin-top: 40px;
+  font-size: 24px;
+}
+
+.booking-list .empty {
+  color: var(--muted-text);
+  margin-top: 10px;
+}
