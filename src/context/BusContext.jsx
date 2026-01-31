@@ -5,7 +5,7 @@ const BusContext = createContext();
 export const useBus = () => useContext(BusContext);
 
 const API = import.meta.env.PROD 
-  ? 'https://bookmyseat-server-1.onrender.com'
+  ? (import.meta.env.VITE_API_URL || 'https://bookmyseat-server.onrender.com')
   : 'http://localhost:5000';
 
 export function BusProvider({ children }) {
@@ -157,10 +157,13 @@ export function BusProvider({ children }) {
     } catch (err) { return [] }
   }
 
-  async function cancelBooking(bookingId) {
+  async function cancelBooking(bookingId, reason) {
     try {
       if (!token) throw new Error('Not authenticated');
-      const res = await axios.post(`${API}/api/buses/bookings/${bookingId}/cancel`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API}/api/buses/bookings/${bookingId}/cancel`, 
+        { reason }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       // Refresh bookings
       await getUserBookings();
       setRefreshTrigger(prev => prev + 1);

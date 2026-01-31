@@ -14,7 +14,7 @@ export default function FilterSideBar({ onFilterChange }) {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
-  };
+  }; 
 
 
 

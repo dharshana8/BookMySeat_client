@@ -273,7 +273,7 @@ export default function SearchResults() {
                       }
                     });
                     return Object.values(routes).slice(0, 4).map((route, idx) => (
-                      <div key={idx} className="popular-route-card" onClick={() => handleNewSearch({ from: route.from, to: route.to, date: "2025-01-25" })}>
+                      <div key={idx} className="popular-route-card" onClick={() => handleNewSearch({ from: route.from, to: route.to, date: "2026-01-31" })}>
                         <div className="route-info">
                           <h4>{route.from} → {route.to}</h4>
                           <p>Starting from ₹{route.minFare}</p>

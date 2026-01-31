@@ -6,37 +6,13 @@ import places from "../data/places"; // if you have places.js in data folder
 export default function SearchBar({ onSearch }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); 
+  const [date, setDate] = useState('2026-01-31'); 
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
   const [activeField, setActiveField] = useState("");
 
-  // Update date to current system date every day
   React.useEffect(() => {
-    const updateDate = () => {
-      const today = new Date().toISOString().split('T')[0];
-      setDate(today);
-    };
-    
-    // Update immediately
-    updateDate();
-    
-    // Update at midnight every day
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    const msUntilMidnight = tomorrow.getTime() - now.getTime();
-    
-    const timeoutId = setTimeout(() => {
-      updateDate();
-      // Then update every 24 hours
-      const intervalId = setInterval(updateDate, 24 * 60 * 60 * 1000);
-      return () => clearInterval(intervalId);
-    }, msUntilMidnight);
-    
-    return () => clearTimeout(timeoutId);
+    setDate('2026-01-31');
   }, []);
 
   function handleFromInput(value) {
@@ -105,8 +81,7 @@ export default function SearchBar({ onSearch }) {
     onSearch({ from: from.trim(), to: to.trim(), date });
   }
 
-  // Set minimum date to today
-  const today = new Date().toISOString().split('T')[0];
+  const today = '2026-01-31';
 
   return (
     <div className="searchBar-container">

@@ -86,6 +86,11 @@ export default function Contact() {
 
           <div className="contact-form-section">
             <h3>Submit a Support Request</h3>
+            {user && (
+              <div className="existing-tickets-link">
+                <p>Already have a support ticket? <a href="/support-tickets">View your tickets</a></p>
+              </div>
+            )}
             {!user ? (
               <div className="login-prompt">
                 <p>Please <a href="/login">login</a> to submit a support request.</p>

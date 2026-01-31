@@ -43,6 +43,7 @@ export default function Header(){
           <Link to="/" onClick={() => setOpen(false)}>Home</Link>
           <Link to="/search" onClick={() => setOpen(false)}>Search</Link>
           <Link to="/my-account" onClick={() => setOpen(false)}>My Account</Link>
+          <Link to="/support-tickets" onClick={() => setOpen(false)}>Support</Link>
           {user?.role === "admin" && <Link to="/admin" onClick={() => setOpen(false)}>Admin Panel</Link>}
           {user ? (<>
             <button className="btn small" onClick={()=>{ logout(); setOpen(false); }}>Logout</button>
@@ -71,6 +72,12 @@ export default function Header(){
                   👤 My Account
                 </div>
               )}
+              <div className="dropdown-item" onClick={() => {navigate('/support-tickets'); setOpen(false);}}>
+                🎫 Support Tickets
+              </div>
+              <div className="dropdown-item" onClick={() => {navigate('/contact'); setOpen(false);}}>
+                📞 Contact Support
+              </div>
               {user?.role === "admin" && (
                 <div className="dropdown-item" onClick={() => {navigate('/admin'); setOpen(false);}}>
                   ⚙️ Admin Panel

@@ -98,6 +98,30 @@
   border: 2px dashed #ddd;
 }
 
+.existing-tickets-link {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-left: 4px solid #2196f3;
+}
+
+.existing-tickets-link p {
+  margin: 0;
+  color: #1976d2;
+}
+
+.existing-tickets-link a {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.existing-tickets-link a:hover {
+  text-decoration: underline;
+}
+
 .login-prompt a {
   color: #d32f2f;
   text-decoration: none;

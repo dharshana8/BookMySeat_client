@@ -14,6 +14,7 @@ import AdminDashBoard from "./Pages/AdminDashBoard.jsx";
 import AdminAddBus from "./Pages/AdminAddBus.jsx";
 import AdminEditBus from "./Pages/AdminEditBus.jsx";
 import Contact from "./Pages/Contact.jsx";
+import SupportTickets from "./Pages/SupportTickets.jsx";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
               <Route path="/login" element={<Auth />} />
               <Route path="/search" element={<SearchResults />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/support-tickets" element={<SupportTickets />} />
 
               {/* Seat Selection (protected) */}
               <Route path="/bus/:id/seats" element={<ProtectedRoute><SeatSelection /></ProtectedRoute>} />
